@@ -1,4 +1,4 @@
-package com.example.xealnfc.ui
+package com.example.xealnfc
 
 import android.os.Bundle
 import android.view.LayoutInflater

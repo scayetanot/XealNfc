@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">XealNfc</string>
+
+
+    <!-- Landing/Nfc Search -->
+    <string name="searching_nfc">Looking for a token\nPlease hold it close to the phone!</string>
+    <string name="searching_nfc_failed">We can not detect any token!</string>
+    <string name="retry">retry</string>
+    <string name="not_enable">Please go to your settings to enable NFC first!"</string>
+    <string name="not_supported">NFC not supported on your device!"</string>
+
+
+    <!-- Home Page -->
+    <string name="funds_available">Funds available</string>
+    <string name="select_amount">Select Reload Amount</string>
+    <string name="select_10">$10</string>
+    <string name="select_25">$25</string>
+    <string name="select_50">$50</string>
 </resources>

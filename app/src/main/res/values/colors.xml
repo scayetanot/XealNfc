@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="purple_xeal">#605DFF</color>
+    <color name="light10">#1AFFFFFF</color>
+    <color name="light20">#33FFFFFF</color>
 </resources>

@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/detectNfcFragment"
-        android:name="com.example.xealnfc.ui.DetectNfcFragment"
+        android:name="com.example.xealnfc.DetectNfcFragment"
         android:label="DetectNfcFragment" >
         <action
             android:id="@+id/action_detectNfcFragment_to_homeFragment"
@@ -14,7 +14,7 @@
     </fragment>
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.example.xealnfc.ui.HomeFragment"
+        android:name="com.example.xealnfc.HomeFragment"
         android:label="HomeFragment" >
         <action
             android:id="@+id/action_homeFragment_to_successFragment"
@@ -22,6 +22,6 @@
     </fragment>
     <fragment
         android:id="@+id/successFragment"
-        android:name="com.example.xealnfc.ui.SuccessFragment"
+        android:name="com.example.xealnfc.SuccessFragment"
         android:label="SuccessFragment" />
 </navigation>
