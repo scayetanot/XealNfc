@@ -89,12 +89,6 @@ class ViewModel: ViewModel() {
         _viewState.value = ViewState.NavigateToHomePage
     }
 
-    fun initTag(user: User?) {
-        _viewState.value = ViewState.NFC_TAG_INITIALIZED
-
-       //  _viewState.value = ViewState.NFC_TAG_INIT_FAILED
-    }
-
      private fun checkForNfc(context: Context?){
          nfcAdapter = NfcAdapter.getDefaultAdapter(context)?.let { it }
          nfcAdapter?.let {
@@ -103,7 +97,6 @@ class ViewModel: ViewModel() {
                      Handler(Looper.getMainLooper()).postDelayed({
                          _viewState.value = ViewState.NFC_DETECT_FAILED
                      }, 10000)
-                    // _viewState.value = ViewState.NFC_DISCOVERING
                  }
                  else -> {
                      _viewState.value = ViewState.NFC_NOT_ENABLED
@@ -115,14 +108,10 @@ class ViewModel: ViewModel() {
     }
 
     sealed class ViewState {
-        object Empty: ViewState()
-        data class Error(val message: String?) : ViewState()
         object Loading : ViewState()
         data class AddingAmountSuccess(val amout: String): ViewState()
         object AddingAmountError: ViewState()
         object NavigateToHomePage: ViewState()
-        object NFC_TAG_INITIALIZED: ViewState()
-        object NFC_TAG_INIT_FAILED: ViewState()
         object SELECT_10 : ViewState()
         object SELECT_25 : ViewState()
         object SELECT_50 : ViewState()

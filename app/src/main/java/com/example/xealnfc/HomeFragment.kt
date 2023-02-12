@@ -59,7 +59,6 @@ class HomeFragment: Fragment() {
             userData = User(edittext.text.toString(), 0)
             binding.name.text = userData?.name
             binding.availableFund.text = getString(R.string.dollar, userData?.remainingAmount.toString())
-            viewModel.initTag(userData)
         }
 
         alert.show()
