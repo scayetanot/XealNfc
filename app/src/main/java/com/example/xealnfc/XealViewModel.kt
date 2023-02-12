@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.nfc.NfcAdapter
-import android.nfc.NfcManager
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ViewModel
@@ -15,7 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class ViewModel: ViewModel() {
+class XealViewModel: ViewModel() {
 
     private val _viewState = MutableStateFlow<ViewState>(ViewState.NFC_DETECT_START)
     val viewState: StateFlow<ViewState> = _viewState
@@ -82,6 +81,10 @@ class ViewModel: ViewModel() {
             }
         }
         nfcAdapter?.enableForegroundDispatch(activity, pendingIntent, null, null)
+    }
+
+    fun disableForegroundDispatch(activity: Activity) {
+        nfcAdapter?.disableForegroundDispatch(activity)
     }
 
     fun emptyNfcTagDetected() {

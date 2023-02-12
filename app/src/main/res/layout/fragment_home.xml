@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="com.example.xealnfc.ViewModel" />
+            type="com.example.xealnfc.XealViewModel" />
 
     </data>
 

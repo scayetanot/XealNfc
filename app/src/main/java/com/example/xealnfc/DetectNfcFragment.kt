@@ -27,7 +27,7 @@ class DetectNfcFragment: Fragment() {
 
     private lateinit var binding: FragmentDetectNfcBinding
 
-    private val viewModel: ViewModel by activityViewModels()
+    private val viewModel: XealViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,19 +45,16 @@ class DetectNfcFragment: Fragment() {
 
     override fun onStart() {
         super.onStart()
-        viewModel.startNfcDetection(requireContext())
     }
 
     override fun onResume() {
         super.onResume()
-        activity?.let {
-            viewModel.enableForegroundDispatch(it)
-        }
 
-        activity?.intent?.let {
-            if(!it.action.equals("android.intent.action.MAIN")) {
-                viewModel.emptyNfcTagDetected()
-            }
+
+     //   activity?.intent?.let {
+      //      if(!it.action.equals("android.intent.action.MAIN")) {
+        //        viewModel.emptyNfcTagDetected()
+        //    }
 
 
                 //var tagFromIntent: Tag? = it.getParcelableExtra(NfcAdapter.EXTRA_TAG)
@@ -68,49 +65,45 @@ class DetectNfcFragment: Fragment() {
                 //    nfc.connect()
                 //}
            //}
-        }
+      //  }
     }
 
     private fun subscribeToViewState() {
         lifecycleScope.launchWhenStarted {
             viewModel.viewState.collect {
                 when (it) {
-                    ViewModel.ViewState.NFC_DETECT_START -> {
+                    XealViewModel.ViewState.NFC_DETECT_START -> {
                         binding.NfcSearchLayout.isVisible = true
                         binding.NfcRetryLayout.isVisible = false
                     }
 
-                    ViewModel.ViewState.NFC_DETECT_FAILED -> {
+                    XealViewModel.ViewState.NFC_DETECT_FAILED -> {
                         binding.NfcSearchLayout.isVisible = false
                         binding.NfcRetryLayout.isVisible = true
                     }
 
-                    ViewModel.ViewState.NFC_NOT_SUPPORTED -> {
+                    XealViewModel.ViewState.NFC_NOT_SUPPORTED -> {
                         binding.NfcSearchLayout.isVisible = false
                         binding.NfcRetryLayout.isVisible = true
                         Toast.makeText(requireContext(), getString(R.string.not_supported), Toast.LENGTH_LONG)
                             .show()
                     }
 
-                    ViewModel.ViewState.NFC_DISCOVERING -> {
-
-                    }
-
-                    ViewModel.ViewState.NFC_NOT_ENABLED -> {
+                    XealViewModel.ViewState.NFC_NOT_ENABLED -> {
                         binding.NfcSearchLayout.isVisible = false
                         binding.NfcRetryLayout.isVisible = true
                         Toast.makeText(requireContext(), getString(R.string.not_enable), Toast.LENGTH_LONG)
                             .show()
                     }
 
-                    ViewModel.ViewState.NFC_RETRY -> {
+                    XealViewModel.ViewState.NFC_RETRY -> {
                         binding.NfcSearchLayout.isVisible = true
                         binding.NfcRetryLayout.isVisible = false
                         delay(1000)
                         viewModel.startNfcDetection(requireContext())
                     }
 
-                    ViewModel.ViewState.NavigateToHomePage -> {
+                    XealViewModel.ViewState.NavigateToHomePage -> {
                         val action = DetectNfcFragmentDirections.actionDetectNfcFragmentToHomeFragment(
                             "", ""
                         )

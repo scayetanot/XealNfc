@@ -20,7 +20,7 @@ class HomeFragment: Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
 
-    private val viewModel: ViewModel by activityViewModels()
+    private val viewModel: XealViewModel by activityViewModels()
     private val args: HomeFragmentArgs by navArgs()
 
     private var userData: User? = null
@@ -67,51 +67,41 @@ class HomeFragment: Fragment() {
         lifecycleScope.launchWhenStarted {
             viewModel.viewState.collect {
                 when (it) {
-                    ViewModel.ViewState.SELECT_10 -> {
+                    XealViewModel.ViewState.SELECT_10 -> {
                         binding.button10.background = context?.getDrawable(R.drawable.button_selected_bg)
                         binding.button25.background = context?.getDrawable(R.drawable.button_default_bg)
                         binding.button50.background = context?.getDrawable(R.drawable.button_default_bg)
                         binding.payNowButton.isEnabled = true
                     }
 
-                    ViewModel.ViewState.SELECT_25 -> {
+                    XealViewModel.ViewState.SELECT_25 -> {
                         binding.button10.background = context?.getDrawable(R.drawable.button_default_bg)
                         binding.button25.background = context?.getDrawable(R.drawable.button_selected_bg)
                         binding.button50.background = context?.getDrawable(R.drawable.button_default_bg)
                         binding.payNowButton.isEnabled = true
                     }
 
-                    ViewModel.ViewState.SELECT_50 -> {
+                    XealViewModel.ViewState.SELECT_50 -> {
                         binding.button10.background = context?.getDrawable(R.drawable.button_default_bg)
                         binding.button25.background = context?.getDrawable(R.drawable.button_default_bg)
                         binding.button50.background = context?.getDrawable(R.drawable.button_selected_bg)
                         binding.payNowButton.isEnabled = true
                     }
 
-                    ViewModel.ViewState.NFC_TAG_INITIALIZED -> {
-                        Toast.makeText(requireContext(), getString(R.string.init_nfc_success), Toast.LENGTH_LONG)
-                            .show()
-                    }
-
-                    ViewModel.ViewState.NFC_TAG_INIT_FAILED -> {
-                    Toast.makeText(requireContext(), getString(R.string.init_nfc_failed), Toast.LENGTH_LONG)
-                        .show()
-                    }
-
-                    ViewModel.ViewState.Loading -> {
+                    XealViewModel.ViewState.Loading -> {
                         binding.payNowButton.text = ""
                         binding.payNowButton.isEnabled = false
                         binding.progressBar.isVisible = true
                     }
 
-                    is ViewModel.ViewState.AddingAmountSuccess -> {
+                    is XealViewModel.ViewState.AddingAmountSuccess -> {
                         val action = HomeFragmentDirections.actionHomeFragmentToSuccessFragment(
                             amout = it.amout
                         )
                         findNavController().navigate(action)
                     }
 
-                    ViewModel.ViewState.AddingAmountError -> {
+                    XealViewModel.ViewState.AddingAmountError -> {
                         binding.payNowButton.isEnabled = true
                         binding.payNowButton.text = getString(R.string.pay_now)
                         binding.progressBar.isVisible = false
