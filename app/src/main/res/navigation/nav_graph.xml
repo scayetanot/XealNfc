@@ -16,6 +16,15 @@
         android:id="@+id/homeFragment"
         android:name="com.example.xealnfc.HomeFragment"
         android:label="HomeFragment" >
+        <argument
+            android:name="name"
+            android:defaultValue=""
+            app:argType="string" />
+        <argument
+            android:name="amout"
+            android:defaultValue=""
+            app:argType="string" />
+
         <action
             android:id="@+id/action_homeFragment_to_successFragment"
             app:destination="@id/successFragment" />
