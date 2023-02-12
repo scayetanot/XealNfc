@@ -1,15 +1,9 @@
 package com.example.xealnfc
 
-import android.app.PendingIntent
 import android.content.Intent
-import android.content.IntentFilter
 import android.nfc.NfcAdapter
-import android.nfc.Tag
-import android.nfc.tech.NfcA
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
-import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -22,6 +16,8 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel: XealViewModel by viewModels()
 
+    private val inWriteMode = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
@@ -29,7 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        viewModel.startNfcDetection(this.applicationContext)
+        viewModel.startNfcDetection(this)
     }
     override fun onResume() {
         super.onResume()
@@ -46,7 +42,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        //intent?.action is null on empoty tag
-        viewModel.emptyNfcTagDetected()
+        if (inWriteMode
+            && NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent?.action)) {
+            viewModel.writeToTag(getIntent());
+        }
+        else if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent?.action)) {
+            viewModel.readFromTag(getIntent());
+        } else {
+            viewModel.emptyNfcTagDetected()
+        }
     }
 }

@@ -2,17 +2,25 @@ package com.example.xealnfc
 
 import android.app.Activity
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.nfc.NdefMessage
+import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
+import android.nfc.NfcAdapter.ReaderCallback
+import android.nfc.Tag
+import android.nfc.tech.Ndef
+import android.nfc.tech.NdefFormatable
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.io.IOException
+
 
 class XealViewModel: ViewModel() {
 
@@ -20,12 +28,15 @@ class XealViewModel: ViewModel() {
     val viewState: StateFlow<ViewState> = _viewState
 
     private var selectedAmount: Int = 0
+    lateinit var userData: User
+
 
     private var nfcAdapter: NfcAdapter? = null
+    private var nfcTag: Tag? = null
 
-    fun startNfcDetection(context: Context?) {
+    fun startNfcDetection(activity: Activity) {
          viewModelScope.launch {
-             checkForNfc(context)
+             checkForNfc(activity)
          }
     }
 
@@ -50,9 +61,11 @@ class XealViewModel: ViewModel() {
 
     fun onPayNowClick() {
         _viewState.value = ViewState.Loading
-        Handler(Looper.getMainLooper()).postDelayed({
+        if(createNFCMessage()) {
             onPayNowSucceed()
-        }, 5000)
+        } else {
+            onPayNowFailed()
+        }
     }
 
     fun onPayNowSucceed() {
@@ -62,6 +75,84 @@ class XealViewModel: ViewModel() {
     fun onPayNowFailed() {
         _viewState.value = ViewState.AddingAmountError
     }
+
+    fun setUserData(name: String, currentAmount: String = "") {
+        User(
+            name = name,
+            remainingAmount = currentAmount.toInt(),
+        )
+    }
+    fun saveNfcTag(tag: Tag) {
+        nfcTag = tag
+    }
+
+    fun getNfcTag() = nfcTag
+
+    fun createNFCMessage() : Boolean {
+
+        var payload = ""
+        val pathPrefix = "xeal.com:nfcxealtag"
+        val nfcRecord = NdefRecord(NdefRecord.TNF_EXTERNAL_TYPE, pathPrefix.toByteArray(), ByteArray(0), payload.toByteArray())
+        val nfcMessage = NdefMessage(arrayOf(nfcRecord))
+        nfcTag?.let {
+            return  writeMessageToTag(nfcMessage, nfcTag)
+        }
+        return false
+    }
+
+    private fun writeMessageToTag(nfcMessage: NdefMessage, tag: Tag?): Boolean {
+
+        try {
+            val nDefTag = Ndef.get(tag)
+
+            nDefTag?.let {
+                it.connect()
+                if (it.maxSize < nfcMessage.toByteArray().size) {
+                    //Message too large to write to NFC tag
+                    return false
+                }
+                if (it.isWritable) {
+                    it.writeNdefMessage(nfcMessage)
+                    it.close()
+                    //Message is written to tag
+                    return true
+                } else {
+                    return false
+                }
+            }
+
+            val nDefFormatableTag = NdefFormatable.get(tag)
+
+            nDefFormatableTag?.let {
+                try {
+                    it.connect()
+                    it.format(nfcMessage)
+                    it.close()
+                    //The data is written to the tag
+                    return true
+                } catch (e: IOException) {
+                    //Failed to format tag
+                    return false
+                }
+            }
+            //NDEF is not supported
+            return false
+
+        } catch (e: Exception) {
+            Log.e(XealViewModel.javaClass.simpleName, "Error: " + e.message)
+            //Write operation has failed
+        }
+        return false
+    }
+
+    fun readFromTag(intent: Intent?) {
+
+    }
+
+    fun writeToTag(intent: Intent?) {
+
+    }
+
 
     fun enableForegroundDispatch(activity: Activity) {
         val intent = Intent(activity.applicationContext, activity.javaClass)
@@ -92,14 +183,16 @@ class XealViewModel: ViewModel() {
         _viewState.value = ViewState.NavigateToHomePage
     }
 
-     private fun checkForNfc(context: Context?){
-         nfcAdapter = NfcAdapter.getDefaultAdapter(context)?.let { it }
+     private fun checkForNfc(activity: Activity){
+         nfcAdapter = NfcAdapter.getDefaultAdapter(activity)?.let { it }
          nfcAdapter?.let {
              when {
                  it.isEnabled -> {
                      Handler(Looper.getMainLooper()).postDelayed({
                          _viewState.value = ViewState.NFC_DETECT_FAILED
                      }, 10000)
+                    // it.enableReaderMode(activity, mReaderCallback,
+                      //   NfcAdapter.FLAG_READER_NFC_A, null);
                  }
                  else -> {
                      _viewState.value = ViewState.NFC_NOT_ENABLED
@@ -123,7 +216,8 @@ class XealViewModel: ViewModel() {
         object NFC_DETECT_START : ViewState()
         object NFC_NOT_SUPPORTED : ViewState()
         object NFC_NOT_ENABLED : ViewState()
-        object NFC_DISCOVERING : ViewState()
+        object NFC_TAG_READ_ONLY : ViewState()
+        object NFC_TAG_MESSAGE_ERROR : ViewState()
 
     }
 
@@ -132,6 +226,5 @@ class XealViewModel: ViewModel() {
         val AMOUNT_25 = 25
         val AMOUNT_50 = 50
     }
-
 
 }

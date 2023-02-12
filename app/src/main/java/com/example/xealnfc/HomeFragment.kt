@@ -23,8 +23,6 @@ class HomeFragment: Fragment() {
     private val viewModel: XealViewModel by activityViewModels()
     private val args: HomeFragmentArgs by navArgs()
 
-    private var userData: User? = null
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -56,9 +54,9 @@ class HomeFragment: Fragment() {
         alert.setPositiveButton(
             "Continue"
         ) { dialog, whichButton -> //What ever you want to do with the value
-            userData = User(edittext.text.toString(), 0)
-            binding.name.text = userData?.name
-            binding.availableFund.text = getString(R.string.dollar, userData?.remainingAmount.toString())
+            viewModel.setUserData(edittext.text.toString())
+            binding.name.text = viewModel.userData.name
+            binding.availableFund.text = getString(R.string.dollar, viewModel.userData.remainingAmount.toString())
         }
 
         alert.show()
@@ -106,6 +104,16 @@ class HomeFragment: Fragment() {
                         binding.payNowButton.text = getString(R.string.pay_now)
                         binding.progressBar.isVisible = false
                         Toast.makeText(requireContext(), getString(R.string.added_amount_error), Toast.LENGTH_LONG)
+                            .show()
+                    }
+
+                    XealViewModel.ViewState.NFC_TAG_READ_ONLY -> {
+                        Toast.makeText(requireContext(), getString(R.string.tag_read_only), Toast.LENGTH_LONG)
+                            .show()
+                    }
+
+                    XealViewModel.ViewState.NFC_TAG_MESSAGE_ERROR -> {
+                        Toast.makeText(requireContext(), getString(R.string.tag_write_error), Toast.LENGTH_LONG)
                             .show()
                     }
 

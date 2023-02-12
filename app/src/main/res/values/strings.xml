@@ -23,8 +23,8 @@
 
     <string name="pay_now">Pay Now</string>
     <string name="successfully_added">$%s Successfully Added!</string>
-    <string name="added_amount_error">Failed to add money on your tag!"</string>
-
-
+    <string name="added_amount_error">Failed to add money on your tag!</string>
+    <string name="tag_read_only">NFC tag read-only!</string>
+    <string name="tag_write_error">NFC tag unknown error!</string>
 
 </resources>

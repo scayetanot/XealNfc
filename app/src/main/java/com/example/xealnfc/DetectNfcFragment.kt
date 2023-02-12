@@ -100,7 +100,7 @@ class DetectNfcFragment: Fragment() {
                         binding.NfcSearchLayout.isVisible = true
                         binding.NfcRetryLayout.isVisible = false
                         delay(1000)
-                        viewModel.startNfcDetection(requireContext())
+                      //  viewModel.startNfcDetection(requireContext())
                     }
 
                     XealViewModel.ViewState.NavigateToHomePage -> {
