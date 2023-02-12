@@ -7,9 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.xealnfc.databinding.FragmentHomeBinding
 
@@ -70,18 +72,21 @@ class HomeFragment: Fragment() {
                         binding.button10.background = context?.getDrawable(R.drawable.button_selected_bg)
                         binding.button25.background = context?.getDrawable(R.drawable.button_default_bg)
                         binding.button50.background = context?.getDrawable(R.drawable.button_default_bg)
+                        binding.payNowButton.isEnabled = true
                     }
 
                     ViewModel.ViewState.SELECT_25 -> {
                         binding.button10.background = context?.getDrawable(R.drawable.button_default_bg)
                         binding.button25.background = context?.getDrawable(R.drawable.button_selected_bg)
                         binding.button50.background = context?.getDrawable(R.drawable.button_default_bg)
+                        binding.payNowButton.isEnabled = true
                     }
 
                     ViewModel.ViewState.SELECT_50 -> {
                         binding.button10.background = context?.getDrawable(R.drawable.button_default_bg)
                         binding.button25.background = context?.getDrawable(R.drawable.button_default_bg)
                         binding.button50.background = context?.getDrawable(R.drawable.button_selected_bg)
+                        binding.payNowButton.isEnabled = true
                     }
 
                     ViewModel.ViewState.NFC_TAG_INITIALIZED -> {
@@ -92,7 +97,28 @@ class HomeFragment: Fragment() {
                     ViewModel.ViewState.NFC_TAG_INIT_FAILED -> {
                     Toast.makeText(requireContext(), getString(R.string.init_nfc_failed), Toast.LENGTH_LONG)
                         .show()
-                }
+                    }
+
+                    ViewModel.ViewState.Loading -> {
+                        binding.payNowButton.text = ""
+                        binding.payNowButton.isEnabled = false
+                        binding.progressBar.isVisible = true
+                    }
+
+                    is ViewModel.ViewState.AddingAmountSuccess -> {
+                        val action = HomeFragmentDirections.actionHomeFragmentToSuccessFragment(
+                            amout = it.amout
+                        )
+                        findNavController().navigate(action)
+                    }
+
+                    ViewModel.ViewState.AddingAmountError -> {
+                        binding.payNowButton.isEnabled = true
+                        binding.payNowButton.text = getString(R.string.pay_now)
+                        binding.progressBar.isVisible = false
+                        Toast.makeText(requireContext(), getString(R.string.added_amount_error), Toast.LENGTH_LONG)
+                            .show()
+                    }
 
                     else -> Unit
                 }

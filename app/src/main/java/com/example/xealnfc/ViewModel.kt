@@ -49,6 +49,21 @@ class ViewModel: ViewModel() {
         selectedAmount = AMOUNT_50
     }
 
+    fun onPayNowClick() {
+        _viewState.value = ViewState.Loading
+        Handler(Looper.getMainLooper()).postDelayed({
+            onPayNowSucceed()
+        }, 5000)
+    }
+
+    fun onPayNowSucceed() {
+        _viewState.value = ViewState.AddingAmountSuccess(selectedAmount.toString())
+    }
+
+    fun onPayNowFailed() {
+        _viewState.value = ViewState.AddingAmountError
+    }
+
     fun enableForegroundDispatch(activity: Activity) {
         val intent = Intent(activity.applicationContext, activity.javaClass)
         intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -103,6 +118,8 @@ class ViewModel: ViewModel() {
         object Empty: ViewState()
         data class Error(val message: String?) : ViewState()
         object Loading : ViewState()
+        data class AddingAmountSuccess(val amout: String): ViewState()
+        object AddingAmountError: ViewState()
         object NavigateToHomePage: ViewState()
         object NFC_TAG_INITIALIZED: ViewState()
         object NFC_TAG_INIT_FAILED: ViewState()

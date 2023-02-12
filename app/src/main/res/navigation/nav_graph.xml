@@ -32,5 +32,12 @@
     <fragment
         android:id="@+id/successFragment"
         android:name="com.example.xealnfc.SuccessFragment"
-        android:label="SuccessFragment" />
+        android:label="SuccessFragment">
+
+        <argument
+            android:name="amout"
+            android:defaultValue=""
+            app:argType="string" />
+
+    </fragment>
 </navigation>

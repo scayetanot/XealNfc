@@ -21,4 +21,10 @@
     <string name="init_nfc_failed">Failed to init your tag!"</string>
     <string name="init_nfc_success">Your tag has been initialized!"</string>
 
+    <string name="pay_now">Pay Now</string>
+    <string name="successfully_added">$%s Successfully Added!</string>
+    <string name="added_amount_error">Failed to add money on your tag!"</string>
+
+
+
 </resources>
