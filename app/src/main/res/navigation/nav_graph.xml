@@ -22,8 +22,8 @@
             app:argType="string" />
         <argument
             android:name="amout"
-            android:defaultValue=""
-            app:argType="string" />
+            android:defaultValue="0"
+            app:argType="integer" />
 
         <action
             android:id="@+id/action_homeFragment_to_successFragment"
@@ -35,9 +35,9 @@
         android:label="SuccessFragment">
 
         <argument
-            android:name="amout"
-            android:defaultValue=""
-            app:argType="string" />
+            android:name="amount"
+            android:defaultValue="0"
+            app:argType="integer" />
 
     </fragment>
 </navigation>

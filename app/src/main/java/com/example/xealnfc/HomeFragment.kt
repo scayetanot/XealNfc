@@ -30,8 +30,10 @@ class HomeFragment: Fragment() {
         binding = FragmentHomeBinding.inflate(layoutInflater)
         binding.viewModel = viewModel
 
-        if (args.name.isBlank()) {
+        if (viewModel.userData.name.isNullOrBlank()) {
             openDialogBox()
+        } else {
+            viewModel.setUserData(args.name, args.amout)
         }
 
         return binding.root
@@ -94,7 +96,7 @@ class HomeFragment: Fragment() {
 
                     is XealViewModel.ViewState.AddingAmountSuccess -> {
                         val action = HomeFragmentDirections.actionHomeFragmentToSuccessFragment(
-                            amout = it.amout
+                            amount = it.amout
                         )
                         findNavController().navigate(action)
                     }

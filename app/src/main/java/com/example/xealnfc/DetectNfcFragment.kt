@@ -103,11 +103,13 @@ class DetectNfcFragment: Fragment() {
                       //  viewModel.startNfcDetection(requireContext())
                     }
 
-                    XealViewModel.ViewState.NavigateToHomePage -> {
-                        val action = DetectNfcFragmentDirections.actionDetectNfcFragmentToHomeFragment(
-                            "", ""
-                        )
+                    is XealViewModel.ViewState.NFC_TAG_READ -> {
+                        val action = DetectNfcFragmentDirections.actionDetectNfcFragmentToHomeFragment()
                         findNavController().navigate(action)
+                    }
+
+                    XealViewModel.ViewState.NavigateToHomePage -> {
+
                     }
                     else -> Unit
                 }

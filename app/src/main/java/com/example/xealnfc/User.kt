@@ -1,6 +1,7 @@
 package com.example.xealnfc
 
 data class User(
-    val name: String?,
-    val remainingAmount: Int?
+    var name: String?,
+    var remainingAmount: Int?,
+    var previousAmount: Int?
 )

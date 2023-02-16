@@ -1,24 +1,21 @@
 package com.example.xealnfc
 
 import android.app.Activity
-import android.app.PendingIntent
-import android.content.Intent
-import android.content.IntentFilter
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
-import android.nfc.NfcAdapter.ReaderCallback
 import android.nfc.Tag
 import android.nfc.tech.Ndef
 import android.nfc.tech.NdefFormatable
-import android.os.Handler
-import android.os.Looper
+import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import java.io.IOException
 
 
@@ -28,12 +25,20 @@ class XealViewModel: ViewModel() {
     val viewState: StateFlow<ViewState> = _viewState
 
     private var selectedAmount: Int = 0
-    lateinit var userData: User
+    var userData: User = User("", 0, 0)
 
 
     private var nfcAdapter: NfcAdapter? = null
     private var nfcTag: Tag? = null
 
+    init {
+        resetData()
+    }
+    fun resetData(){
+        userData.name = ""
+        userData.remainingAmount = 0
+        userData.previousAmount = 0
+    }
     fun startNfcDetection(activity: Activity) {
          viewModelScope.launch {
              checkForNfc(activity)
@@ -61,36 +66,38 @@ class XealViewModel: ViewModel() {
 
     fun onPayNowClick() {
         _viewState.value = ViewState.Loading
+        userData.previousAmount = userData.remainingAmount
+        userData.remainingAmount = userData.remainingAmount?.plus(selectedAmount)
         if(createNFCMessage()) {
             onPayNowSucceed()
         } else {
+            userData.remainingAmount = userData.previousAmount
             onPayNowFailed()
         }
     }
 
     fun onPayNowSucceed() {
-        _viewState.value = ViewState.AddingAmountSuccess(selectedAmount.toString())
+        _viewState.value = ViewState.AddingAmountSuccess(selectedAmount)
     }
 
     fun onPayNowFailed() {
         _viewState.value = ViewState.AddingAmountError
     }
 
-    fun setUserData(name: String, currentAmount: String = "") {
-        User(
-            name = name,
-            remainingAmount = currentAmount.toInt(),
-        )
+    fun setUserData(name: String, currentAmount: Int = 0) {
+        userData.name = name
+        userData.remainingAmount = currentAmount
     }
-    fun saveNfcTag(tag: Tag) {
+    fun saveNfcTag(tag: Tag?) {
         nfcTag = tag
     }
 
     fun getNfcTag() = nfcTag
 
     fun createNFCMessage() : Boolean {
-
-        var payload = ""
+        var gson = Gson()
+        var jsonString = gson.toJson(userData)
+        var payload = jsonString.toString()
         val pathPrefix = "xeal.com:nfcxealtag"
         val nfcRecord = NdefRecord(NdefRecord.TNF_EXTERNAL_TYPE, pathPrefix.toByteArray(), ByteArray(0), payload.toByteArray())
         val nfcMessage = NdefMessage(arrayOf(nfcRecord))
@@ -101,7 +108,6 @@ class XealViewModel: ViewModel() {
     }
 
     private fun writeMessageToTag(nfcMessage: NdefMessage, tag: Tag?): Boolean {
-
         try {
             val nDefTag = Ndef.get(tag)
 
@@ -145,55 +151,66 @@ class XealViewModel: ViewModel() {
         return false
     }
 
-    fun readFromTag(intent: Intent?) {
-
-    }
-
-    fun writeToTag(intent: Intent?) {
-
-    }
-
-
-    fun enableForegroundDispatch(activity: Activity) {
-        val intent = Intent(activity.applicationContext, activity.javaClass)
-        intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-        val pendingIntent = PendingIntent.getActivity(activity.applicationContext, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-        val filters = arrayOfNulls<IntentFilter>(1)
-        val techList = arrayOf<Array<String>>()
-        filters[0] = IntentFilter()
-        with(filters[0]) {
-            this?.addAction(NfcAdapter.ACTION_NDEF_DISCOVERED)
-            this?.addAction(NfcAdapter.ACTION_TAG_DISCOVERED)
-            this?.addCategory(Intent.CATEGORY_DEFAULT)
-            try {
-                this?.addDataType("text/plain")
-            } catch (ex: IntentFilter.MalformedMimeTypeException) {
-                throw RuntimeException(ex)
+    fun readFromTag() {
+        try {
+            val nDefTag = Ndef.get(nfcTag)
+            nDefTag?.let {
+                it.connect()
+                val nDefMessage = it.ndefMessage
+                if(nDefMessage == null) {
+                    _viewState.value= ViewState.NFC_TAG_READ
+                } else {
+                    val json = JSONObject(nDefMessage.records[0].payload.decodeToString())
+                    userData.name = json.getString("name").toString()
+                    userData.remainingAmount= json.getInt("remainingAmount")
+                    userData.remainingAmount= json.optInt("previousAmount", 0)
+                    _viewState.value= ViewState.NFC_TAG_READ
+                }
             }
+        } catch (e: Exception) {
+            Log.e(XealViewModel.javaClass.simpleName, "Error: " + e.message)
         }
-        nfcAdapter?.enableForegroundDispatch(activity, pendingIntent, null, null)
+
+
+    }
+
+    fun enableForegroundDispatch(activity: Activity, callback: NfcAdapter.ReaderCallback) {
+        nfcAdapter?.let {
+            val options = Bundle()
+            // Work around for some broken Nfc firmware implementations that poll the card too fast
+            options.putInt(NfcAdapter.EXTRA_READER_PRESENCE_CHECK_DELAY, 250)
+
+            // Enable ReaderMode for all types of card and disable platform sounds
+            it.enableReaderMode(
+                activity,
+                callback,
+                NfcAdapter.FLAG_READER_NFC_A or
+                        NfcAdapter.FLAG_READER_NFC_B or
+                        NfcAdapter.FLAG_READER_NFC_F or
+                        NfcAdapter.FLAG_READER_NFC_V or
+                        NfcAdapter.FLAG_READER_NFC_BARCODE or
+                        NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS,
+                options
+            )
+        }
     }
 
     fun disableForegroundDispatch(activity: Activity) {
-        nfcAdapter?.disableForegroundDispatch(activity)
+        //nfcAdapter?.disableForegroundDispatch(activity)
+        nfcAdapter?.let {
+            it.disableReaderMode(activity)
+        }
     }
 
     fun emptyNfcTagDetected() {
-        Handler().removeCallbacksAndMessages(null)
-        _viewState.value = ViewState.NavigateToHomePage
+        _viewState.value = ViewState.EMPTY_NFC_TAG
     }
 
      private fun checkForNfc(activity: Activity){
          nfcAdapter = NfcAdapter.getDefaultAdapter(activity)?.let { it }
          nfcAdapter?.let {
              when {
-                 it.isEnabled -> {
-                     Handler(Looper.getMainLooper()).postDelayed({
-                         _viewState.value = ViewState.NFC_DETECT_FAILED
-                     }, 10000)
-                    // it.enableReaderMode(activity, mReaderCallback,
-                      //   NfcAdapter.FLAG_READER_NFC_A, null);
-                 }
+                 it.isEnabled -> {}
                  else -> {
                      _viewState.value = ViewState.NFC_NOT_ENABLED
                  }
@@ -205,7 +222,7 @@ class XealViewModel: ViewModel() {
 
     sealed class ViewState {
         object Loading : ViewState()
-        data class AddingAmountSuccess(val amout: String): ViewState()
+        data class AddingAmountSuccess(val amout: Int): ViewState()
         object AddingAmountError: ViewState()
         object NavigateToHomePage: ViewState()
         object SELECT_10 : ViewState()
@@ -218,6 +235,8 @@ class XealViewModel: ViewModel() {
         object NFC_NOT_ENABLED : ViewState()
         object NFC_TAG_READ_ONLY : ViewState()
         object NFC_TAG_MESSAGE_ERROR : ViewState()
+        object EMPTY_NFC_TAG : ViewState()
+        object NFC_TAG_READ : ViewState()
 
     }
 

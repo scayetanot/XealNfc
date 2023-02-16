@@ -1,11 +1,14 @@
 package com.example.xealnfc
 
-import android.os.Bundle
+import android.content.Context
+import android.os.*
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.xealnfc.databinding.FragmentSuccessBinding
 
@@ -21,11 +24,14 @@ class SuccessFragment: Fragment() {
     ): View {
         binding = FragmentSuccessBinding.inflate(layoutInflater)
 
-        if (args.amout.isNotEmpty()) {
-            binding.successText.text = getString(R.string.successfully_added, args.amout)
-        } else {
-            binding.successText.isVisible = false
-        }
+        val v = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
+        binding.successText.text = getString(R.string.successfully_added, args.amount.toString())
+        Handler(Looper.getMainLooper()).postDelayed(object : Runnable {
+            override fun run() {
+                findNavController().navigateUp()
+            }
+        },2000)
 
         return binding.root
     }
