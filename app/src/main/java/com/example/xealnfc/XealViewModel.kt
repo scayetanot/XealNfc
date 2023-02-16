@@ -25,19 +25,16 @@ class XealViewModel: ViewModel() {
     val viewState: StateFlow<ViewState> = _viewState
 
     private var selectedAmount: Int = 0
-    var userData: User = User("", 0, 0)
+    var userData: User = User("", 0.0, 0.0)
 
 
     private var nfcAdapter: NfcAdapter? = null
     private var nfcTag: Tag? = null
 
-    init {
-        resetData()
-    }
     fun resetData(){
         userData.name = ""
-        userData.remainingAmount = 0
-        userData.previousAmount = 0
+        userData.remainingAmount = 0.0
+        userData.previousAmount = 0.0
     }
     fun startNfcDetection(activity: Activity) {
          viewModelScope.launch {
@@ -84,7 +81,7 @@ class XealViewModel: ViewModel() {
         _viewState.value = ViewState.AddingAmountError
     }
 
-    fun setUserData(name: String, currentAmount: Int = 0) {
+    fun setUserData(name: String, currentAmount: Double = 0.0) {
         userData.name = name
         userData.remainingAmount = currentAmount
     }
@@ -162,8 +159,8 @@ class XealViewModel: ViewModel() {
                 } else {
                     val json = JSONObject(nDefMessage.records[0].payload.decodeToString())
                     userData.name = json.getString("name").toString()
-                    userData.remainingAmount= json.getInt("remainingAmount")
-                    userData.remainingAmount= json.optInt("previousAmount", 0)
+                    userData.remainingAmount= json.getDouble("remainingAmount")
+                    userData.remainingAmount= json.optDouble("previousAmount", 0.0)
                     _viewState.value= ViewState.NFC_TAG_READ
                 }
             }
